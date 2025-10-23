@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Suragua - Gestión de Bidones y Mantenimiento</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="imagen-fondo1">
+    <div class="container">
+        <img src="./assets/img/fondo13.png" alt="SuraguaLogo" class="logo">
+        <h1>Bienvenido a Suragua</h1>
+
+        <!-- PANTALLA DE LOGIN -->
+        <div id="loginScreen" class="screen active">
+            <h2>Iniciar Sesión</h2>
+            <form id="loginForm">
+                <div class="input-group">
+                    <label for="username">Usuario:</label>
+                    <input type="text" id="username" required>
+                </div>
+                <div class="input-group">
+                    <label for="password">Contraseña:</label>
+                    <input type="password" id="password" required>
+                </div>
+                <button type="submit">Ingresar</button>
+                <p id="loginMessage" class="error-message"></p>
+            </form>
+        </div>
+
+        <!-- PANTALLA DE OPCIONES -->
+        <div id="optionsScreen"  class="screen">
+            <h2>Selecciona una opción:</h2>
+            <button id="btnBidones">Carga de Bidones</button>
+            <button id="btnMantenimiento">Carga de Mantenimiento</button>
+            <button id="btnLogout" class="btn-secondary">Cerrar Sesión</button>
+        </div>
+
+        <!-- PANTALLA DE CARGA DE BIDONES -->
+        <div id="bidonesScreen" class="screen">
+            <h2>Carga de Bidones</h2>
+            <form id="bidonesForm">
+                <div class="input-group">
+                    <label for="cantidadEntregados">Cant. Bidones Entregados:</label>
+                    <input type="number" id="cantidadEntregados" min="0" required>
+                </div>
+                <div class="input-group">
+                    <label for="vaciosRetirados">Bidones Vacíos Retirados:</label>
+                    <input type="number" id="vaciosRetirados" min="0" required>
+                </div>
+                <div class="input-group">
+                    <label for="lugar">Lugar:</label>
+                    <input type="text" id="lugar" required>
+                </div>
+                <div class="input-group">
+                    <label for="sector">Sector:</label>
+                    <input type="text" id="sector" required>
+                </div>
+                <div class="input-group">
+                    <label for="observacionesBidones">Observaciones:</label>
+                    <textarea id="observacionesBidones"></textarea>
+                </div>
+                <button type="submit">Guardar Datos Bidones</button>
+                <button type="button" class="btn-secondary" id="backToOptionsFromBidones">Volver</button>
+                <p id="bidonesMessage" class="success-message"></p>
+            </form>
+        </div>
+
+        <!-- PANTALLA DE CARGA DE MANTENIMIENTO -->
+        <div id="mantenimientoScreen" class="screen">
+            <h2>Carga de Mantenimientos</h2>
+            <form id="mantenimientoForm">
+                <div class="input-group">
+                <label for="idDispenser">ID del Dispensador:</label>
+                <input type="text" id="idDispenser" readonly>
+                </div>
+                <div class="input-group">
+                    <label for="fechaMantenimiento">Fecha del Mantenimiento:</label>
+                    <input type="date" id="fechaMantenimiento" required>
+                </div>
+                <div class="input-group">
+                    <label for="lugarDispenser">Ubicacion del Dispenser:</label>
+                    <input type="text" id="lugarDispenser" required>
+                </div>
+                <div class="input-group">
+                    <label for="sectorDispenser">Sector del Dispenser:</label>
+                    <input type="text" id="sectorDispenser" required>
+                </div>
+                <div class="input-group">
+                    <label for="observacionesMantenimiento">Observaciones:</label>
+                    <textarea id="observacionesMantenimiento"></textarea>
+                </div>
+                <button type="submit">Guardar Datos Mantenimiento</button>
+                <button type="button" class="btn-secondary" id="backToOptionsFromMantenimiento">Volver</button>
+                <p id="mantenimientoMessage" class="success-message"></p>
+            </form>
+        </div>
+    </div>
+
+<script src="script.js"></script>
+</body>
+</html>
