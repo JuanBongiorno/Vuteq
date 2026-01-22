@@ -29,10 +29,11 @@
         </div>
 
         <!-- PANTALLA DE OPCIONES -->
-        <div id="optionsScreen"  class="screen">
+        <div id="optionsScreen" class="screen">
             <h2>Selecciona una opción:</h2>
             <button id="btnBidones">Carga de Bidones</button>
             <button id="btnMantenimiento">Carga de Mantenimiento</button>
+            <button id="btnHistorial" class="btn-info">Ver Historial (<span id="countHistorial">0</span>)</button>
             <button id="btnLogout" class="btn-secondary">Cerrar Sesión</button>
         </div>
 
@@ -60,24 +61,19 @@
                     <label for="observacionesBidones">Observaciones:</label>
                     <textarea id="observacionesBidones"></textarea>
                 </div>
-                <button type="submit">Guardar Datos Bidones</button>
+                <button type="submit">Guardar y Siguiente</button>
                 <button type="button" class="btn-secondary" id="backToOptionsFromBidones">Volver</button>
                 <p id="bidonesMessage" class="success-message"></p>
             </form>
         </div>
 
-        
         <!-- PANTALLA DE CARGA DE MANTENIMIENTO -->
         <div id="mantenimientoScreen" class="screen">
             <h2>Carga de Mantenimientos</h2>
             <form id="mantenimientoForm">
                 <div class="input-group">
-                <label for="idDispenser">ID del Dispensador:</label>
-                <input type="text" id="idDispenser" readonly>
-                </div>
-                <div class="input-group">
-                    <label for="fechaMantenimiento">Fecha del Mantenimiento:</label>
-                    <input type="date" id="fechaMantenimiento" required>
+                    <label for="idDispenser">ID del Dispensador:</label>
+                    <input type="text" id="idDispenser">
                 </div>
                 <div class="input-group">
                     <label for="lugarDispenser">Ubicacion del Dispenser:</label>
@@ -91,10 +87,19 @@
                     <label for="observacionesMantenimiento">Observaciones:</label>
                     <textarea id="observacionesMantenimiento"></textarea>
                 </div>
-                <button type="submit">Guardar Datos Mantenimiento</button>
+                <button type="submit">Guardar y Siguiente</button>
                 <button type="button" class="btn-secondary" id="backToOptionsFromMantenimiento">Volver</button>
                 <p id="mantenimientoMessage" class="success-message"></p>
             </form>
+        </div>
+
+        <!-- PANTALLA DE HISTORIAL -->
+        <div id="historialScreen" class="screen">
+            <h2>Historial del Día</h2>
+            <div id="listaHistorial" class="historial-container">
+                <!-- Se llena con JS -->
+            </div>
+            <button type="button" class="btn-secondary" id="backToOptionsFromHistorial">Volver</button>
         </div>
     </div>
 

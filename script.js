@@ -1,182 +1,177 @@
-const idDispenserInput = document.getElementById('idDispenser');
-
-// ¡IMPORTANTE! Reemplaza 'TU_APPS_SCRIPT_WEB_APP_URL' con la URL que obtuviste al desplegar Apps Script
 const APPS_SCRIPT_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbw96gRN7MZxMuYs3rjJ2SP9LwWu7ZBTKwnapNN-QE6pI88L0ApvB7JjckQ0TdhyW-8l/exec';
-
-// Credenciales de acceso
 const VALID_USERNAME = '1234';
 const VALID_PASSWORD = '1234';
 
-let loggedInUser = ''; // Variable para almacenar el usuario logeado
+let loggedInUser = '';
 
 // Elementos del DOM
-const loginScreen = document.getElementById('loginScreen');
-const optionsScreen = document.getElementById('optionsScreen');
-const bidonesScreen = document.getElementById('bidonesScreen');
-const mantenimientoScreen = document.getElementById('mantenimientoScreen');
+const screens = {
+    login: document.getElementById('loginScreen'),
+    options: document.getElementById('optionsScreen'),
+    bidones: document.getElementById('bidonesScreen'),
+    mantenimiento: document.getElementById('mantenimientoScreen'),
+    historial: document.getElementById('historialScreen')
+};
 
-const loginForm = document.getElementById('loginForm');
-const loginMessage = document.getElementById('loginMessage');
-const usernameInput = document.getElementById('username');
-const passwordInput = document.getElementById('password');
+const countHistorial = document.getElementById('countHistorial');
+const listaHistorial = document.getElementById('listaHistorial');
 
-const btnBidones = document.getElementById('btnBidones');
-const btnMantenimiento = document.getElementById('btnMantenimiento');
-const btnLogout = document.getElementById('btnLogout');
+// --- LÓGICA DE HISTORIAL Y RESET DIARIO ---
 
-const bidonesForm = document.getElementById('bidonesForm');
-const bidonesMessage = document.getElementById('bidonesMessage');
-const backToOptionsFromBidones = document.getElementById('backToOptionsFromBidones');
+function checkDailyReset() {
+    const lastDate = localStorage.getItem('lastDate');
+    const today = new Date().toLocaleDateString();
 
-const mantenimientoForm = document.getElementById('mantenimientoForm');
-const mantenimientoMessage = document.getElementById('mantenimientoMessage');
-const backToOptionsFromMantenimiento = document.getElementById('backToOptionsFromMantenimiento');
-
-// Función para obtener el ID de la URL
-function getDispenserIdFromUrl() {
-    const urlParams = new URLSearchParams(window.location.search);
-    return urlParams.get('idDispenser');
+    if (lastDate !== today) {
+        localStorage.setItem('historial', JSON.stringify([]));
+        localStorage.setItem('lastDate', today);
+    }
+    updateHistoryCounter();
 }
 
-// Llama a la función al cargar la página para obtener el ID de la URL
-const dispenserIdFromUrl = getDispenserIdFromUrl();
-if (dispenserIdFromUrl) {
-    localStorage.setItem('tempDispenserId', dispenserIdFromUrl);
+function saveToLocalHistory(type, detail) {
+    const historial = JSON.parse(localStorage.getItem('historial') || '[]');
+    const item = {
+        hora: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        type: type,
+        detail: detail
+    };
+    historial.unshift(item); // Agregar al principio
+    localStorage.setItem('historial', JSON.stringify(historial));
+    updateHistoryCounter();
 }
 
-// --- Funciones para mostrar pantallas ---
+function updateHistoryCounter() {
+    const historial = JSON.parse(localStorage.getItem('historial') || '[]');
+    countHistorial.textContent = historial.length;
+}
+
+function renderHistorial() {
+    const historial = JSON.parse(localStorage.getItem('historial') || '[]');
+    listaHistorial.innerHTML = historial.length === 0 ? '<p>No hay registros hoy.</p>' : '';
+    
+    historial.forEach(item => {
+        const div = document.createElement('div');
+        div.className = 'historial-item';
+        div.innerHTML = `
+            <span class="historial-tag">[${item.hora}] ${item.type}</span>
+            <span>${item.detail}</span>
+        `;
+        listaHistorial.appendChild(div);
+    });
+}
+
+// --- NAVEGACIÓN ---
+
 function showScreen(screenToShow) {
-    const screens = document.querySelectorAll('.screen');
-    screens.forEach(screen => screen.classList.remove('active'));
+    Object.values(screens).forEach(s => s.classList.remove('active'));
     screenToShow.classList.add('active');
 }
 
-// --- Manejo del Login ---
-loginForm.addEventListener('submit', (e) => {
+// --- EVENTOS ---
+
+document.getElementById('loginForm').addEventListener('submit', (e) => {
     e.preventDefault();
+    const user = document.getElementById('username').value.toUpperCase();
+    const pass = document.getElementById('password').value;
 
-    const username = usernameInput.value.toUpperCase();
-    const password = passwordInput.value;
-
-    if (username === VALID_USERNAME && password === VALID_PASSWORD) {
-        loggedInUser = username;
-        loginMessage.textContent = 'Inicio de sesión exitoso.';
-        loginMessage.classList.remove('error-message');
-        loginMessage.classList.add('success-message');
-        
-        // Lógica para usar el ID del QR después de iniciar sesión
-        const tempDispenserId = localStorage.getItem('tempDispenserId');
-        if (tempDispenserId) {
-            idDispenserInput.value = tempDispenserId;
-            showScreen(mantenimientoScreen);
+    if (user === VALID_USERNAME && pass === VALID_PASSWORD) {
+        loggedInUser = user;
+        checkDailyReset();
+        const tempId = localStorage.getItem('tempDispenserId');
+        if (tempId) {
+            document.getElementById('idDispenser').value = tempId;
             localStorage.removeItem('tempDispenserId');
+            showScreen(screens.mantenimiento);
         } else {
-            showScreen(optionsScreen);
+            showScreen(screens.options);
         }
     } else {
-        loginMessage.textContent = 'Usuario o contraseña incorrectos.';
-        loginMessage.classList.add('error-message');
-        loginMessage.classList.remove('success-message');
+        document.getElementById('loginMessage').textContent = 'Error de credenciales';
     }
 });
 
-btnLogout.addEventListener('click', () => {
-    loggedInUser = '';
-    showScreen(loginScreen);
-});
+// Botones de navegación
+document.getElementById('btnBidones').onclick = () => showScreen(screens.bidones);
+document.getElementById('btnMantenimiento').onclick = () => showScreen(screens.mantenimiento);
+document.getElementById('btnHistorial').onclick = () => { renderHistorial(); showScreen(screens.historial); };
+document.getElementById('btnLogout').onclick = () => location.reload();
+document.getElementById('backToOptionsFromBidones').onclick = () => showScreen(screens.options);
+document.getElementById('backToOptionsFromMantenimiento').onclick = () => showScreen(screens.options);
+document.getElementById('backToOptionsFromHistorial').onclick = () => showScreen(screens.options);
 
-// --- Navegación entre opciones ---
-btnBidones.addEventListener('click', () => {
-    showScreen(bidonesScreen);
-    bidonesMessage.textContent = '';
-    bidonesForm.reset();
-});
+// --- ENVÍO DE DATOS (ALTA VELOCIDAD) ---
 
-btnMantenimiento.addEventListener('click', () => {
-    showScreen(mantenimientoScreen);
-    mantenimientoMessage.textContent = '';
-    mantenimientoForm.reset();
-    const today = new Date();
-    const yyyy = today.getFullYear();
-    const mm = String(today.getMonth() + 1).padStart(2, '0');
-    const dd = String(today.getDate()).padStart(2, '0');
-    document.getElementById('fechaMantenimiento').value = `${yyyy}-${mm}-${dd}`;
-});
+async function sendDataInBackground(formData, successMsgElement) {
+    try {
+        const response = await fetch(APPS_SCRIPT_WEB_APP_URL, { method: 'POST', body: formData });
+        console.log('Enviado con éxito');
+    } catch (error) {
+        console.error('Error en segundo plano:', error);
+    }
+}
 
-backToOptionsFromBidones.addEventListener('click', () => {
-    showScreen(optionsScreen);
-});
-
-backToOptionsFromMantenimiento.addEventListener('click', () => {
-    showScreen(optionsScreen);
-});
-
-// --- Envío de datos de Bidones ---
-bidonesForm.addEventListener('submit', async (e) => {
+// Submit Bidones
+document.getElementById('bidonesForm').addEventListener('submit', function(e) {
     e.preventDefault();
+    
+    // 1. Capturar datos
+    const lug = document.getElementById('lugar').value;
+    const cant = document.getElementById('cantidadEntregados').value;
+    const detail = `${lug} - Entregados: ${cant}`;
+    
+    // 2. Guardar en historial local inmediatamente
+    saveToLocalHistory('Bidones', detail);
 
-    const formData = new FormData();
+    // 3. Preparar FormData
+    const formData = new FormData(this);
     formData.append('sheet', 'Entregas');
     formData.append('usuario', loggedInUser);
-    formData.append('cantidadEntregados', document.getElementById('cantidadEntregados').value);
-    formData.append('vaciosRetirados', document.getElementById('vaciosRetirados').value);
-    formData.append('lugar', document.getElementById('lugar').value);
+    formData.append('lugar', lug);
     formData.append('sector', document.getElementById('sector').value);
+    formData.append('cantidadEntregados', cant);
+    formData.append('vaciosRetirados', document.getElementById('vaciosRetirados').value);
     formData.append('observaciones', document.getElementById('observacionesBidones').value);
 
-    try {
-        const response = await fetch(APPS_SCRIPT_WEB_APP_URL, {
-            method: 'POST',
-            body: formData
-        });
-        const result = await response.text();
-        bidonesMessage.textContent = '¡Datos de bidones guardados con éxito!';
-        bidonesMessage.classList.remove('error-message');
-        bidonesMessage.classList.add('success-message');
-        bidonesForm.reset();
-    } catch (error) {
-        console.error('Error al enviar datos de bidones:', error);
-        bidonesMessage.textContent = 'Error al guardar datos. Intenta de nuevo.';
-        bidonesMessage.classList.remove('success-message');
-        bidonesMessage.classList.add('error-message');
-    }
+    // 4. Enviar en segundo plano (no usamos await aquí para no bloquear)
+    sendDataInBackground(formData);
+
+    // 5. Limpiar UI instantáneamente para el siguiente
+    this.reset();
+    document.getElementById('bidonesMessage').textContent = 'Guardado localmente y enviando...';
+    setTimeout(() => document.getElementById('bidonesMessage').textContent = '', 2000);
 });
 
-// --- Envío de datos de Mantenimiento ---
-mantenimientoForm.addEventListener('submit', async (e) => {
+// Submit Mantenimiento
+document.getElementById('mantenimientoForm').addEventListener('submit', function(e) {
     e.preventDefault();
 
-    const formData = new FormData();
+    const idDisp = document.getElementById('idDispenser').value || 'S/N';
+    const lug = document.getElementById('lugarDispenser').value;
+    const detail = `ID: ${idDisp} en ${lug}`;
+
+    saveToLocalHistory('Mantenimiento', detail);
+
+    const formData = new FormData(this);
     formData.append('sheet', 'Mantenimiento');
     formData.append('usuario', loggedInUser);
-    formData.append('idDispenser', idDispenserInput.value);
-    formData.append('fechaMantenimiento', document.getElementById('fechaMantenimiento').value);
-    formData.append('lugarDispenser', document.getElementById('lugarDispenser').value);
+    formData.append('idDispenser', idDisp);
+    formData.append('fechaMantenimiento', new Date().toISOString().split('T')[0]);
+    formData.append('lugarDispenser', lug);
     formData.append('sectorDispenser', document.getElementById('sectorDispenser').value);
     formData.append('observacionesMantenimiento', document.getElementById('observacionesMantenimiento').value);
 
-    try {
-        const response = await fetch(APPS_SCRIPT_WEB_APP_URL, {
-            method: 'POST',
-            body: formData
-        });
-        const result = await response.text();
-        mantenimientoMessage.textContent = '¡Datos de mantenimiento guardados con éxito!';
-        mantenimientoMessage.classList.remove('error-message');
-        mantenimientoMessage.classList.add('success-message');
-        mantenimientoForm.reset();
-        const today = new Date();
-        const yyyy = today.getFullYear();
-        const mm = String(today.getMonth() + 1).padStart(2, '0');
-        const dd = String(today.getDate()).padStart(2, '0');
-        document.getElementById('fechaMantenimiento').value = `${yyyy}-${mm}-${dd}`;
-    } catch (error) {
-        console.error('Error al enviar datos de mantenimiento:', error);
-        mantenimientoMessage.textContent = 'Error al guardar datos. Intenta de nuevo.';
-        mantenimientoMessage.classList.remove('success-message');
-        mantenimientoMessage.classList.add('error-message');
-    }
+    sendDataInBackground(formData);
+
+    this.reset();
+    document.getElementById('mantenimientoMessage').textContent = 'Guardado localmente y enviando...';
+    setTimeout(() => document.getElementById('mantenimientoMessage').textContent = '', 2000);
 });
 
-// Inicializa mostrando la pantalla de login
-showScreen(loginScreen);
+// Capturar ID de URL
+const urlParams = new URLSearchParams(window.location.search);
+const idUrl = urlParams.get('idDispenser');
+if (idUrl) localStorage.setItem('tempDispenserId', idUrl);
+
+// Inicializar
+checkDailyReset();
